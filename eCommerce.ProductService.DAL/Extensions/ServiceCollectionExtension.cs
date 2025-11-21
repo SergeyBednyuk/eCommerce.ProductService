@@ -1,4 +1,6 @@
 ﻿using eCommerce.ProductService.DAL.Context;
+using eCommerce.ProductService.DAL.Repositories;
+using eCommerce.ProductService.DAL.RepositoryInterfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,9 @@ public static class ServiceCollectionExtension
         {
             options.UseMySQL(configuration.GetConnectionString("DefaultConnection")!);
         });
+        
+        services.AddScoped<IProductsRepository, ProductRepository>();
+        
         return services;
     }
 }

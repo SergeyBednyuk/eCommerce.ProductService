@@ -2,9 +2,9 @@
 
 public class Product
 {
-    public Guid ProductID { get; set; }
-    public string ProductName { get; set; }
-    public string Category { get; set; }
-    public double UnitOrice { get; set; }
+    public Guid Id { get; set; }
+    public required string Name { get; set; }
+    public string Category { get; set; } = "Other";
+    public decimal UnitPrice { get; set; }
     public int QuantityInStock { get; set; }
 }
