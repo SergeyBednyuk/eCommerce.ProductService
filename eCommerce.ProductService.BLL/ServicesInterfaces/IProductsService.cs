@@ -6,10 +6,15 @@ namespace eCommerce.ProductService.BLL.ServicesInterfaces;
 
 public interface IProductsService
 {
-    Task<IEnumerable<ProductResponse>> GetProductsAsync(int page = 1, int pageSize = 10);
-    Task<IEnumerable<ProductResponse>> GetProductsByConditionAsync(Expression<Func<ProductResponse, bool>> conditionExpression);
-    Task<ProductResponse> GetProductByConditionAsync(Expression<Func<ProductResponse, bool>> conditionExpression);
-    Task<ProductResponse> AddProductAsync(AddProductRequest addProductRequest);
-    Task<ProductResponse> UpdateProductAsync(UpdateProductRequest updateProductRequest);
-    Task<ProductResponse> DeleteProductAsync(Guid id);
+    Task<ProductResponse<ProductDto>> GetProductsAsync(int page = 1, int pageSize = 10);
+
+    Task<ProductResponse<ProductDto>> GetProductsByConditionAsync(
+        Expression<Func<ProductResponse<ProductDto>, bool>> conditionExpression);
+
+    Task<ProductResponse<ProductDto>> GetProductByConditionAsync(
+        Expression<Func<ProductResponse<ProductDto>, bool>> conditionExpression);
+
+    Task<ProductResponse<ProductDto>> AddProductAsync(AddProductRequest addProductRequest);
+    Task<ProductResponse<ProductDto>> UpdateProductAsync(UpdateProductRequest updateProductRequest);
+    Task<ProductResponse<ProductDto>> DeleteProductAsync(Guid id);
 }

@@ -30,6 +30,7 @@ public class ProductMappingProfile : Profile
             .ForMember(desc => desc.QuantityInStock,
                 opt => opt.MapFrom(src => src.QuantityInStock));
         
-        CreateMap<Product, ProductResponse>();
+        CreateMap<Product, ProductDto>()
+            .ReverseMap();
     }
 }
