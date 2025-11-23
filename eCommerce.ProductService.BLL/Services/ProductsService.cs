@@ -41,7 +41,6 @@ public class ProductsService(
     public async Task<ProductResponse<IEnumerable<ProductDto>>> GetProductsByConditionAsync(ProductFilterDto filter)
     {
         var expression = CreateExpression(filter);
-
         var result = await _productsRepository.GetProductsByConditionAsync(expression);
         var mapperResult = _mapper.Map<IEnumerable<ProductDto>>(result);
         return ProductResponse<IEnumerable<ProductDto>>.Success(mapperResult);
@@ -50,9 +49,7 @@ public class ProductsService(
     public async Task<ProductResponse<ProductDto>> GetProductByConditionAsync(ProductFilterDto filter)
     {
         var expression = CreateExpression(filter);
-
         var result = await _productsRepository.GetProductByConditionAsync(expression);
-
         return result is not null
             ? ProductResponse<ProductDto>.Success(_mapper.Map<ProductDto>(result))
             : ProductResponse<ProductDto>.Failure("Product not found");

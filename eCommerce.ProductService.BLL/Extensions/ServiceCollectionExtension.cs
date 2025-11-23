@@ -1,5 +1,7 @@
 ﻿using eCommerce.ProductService.BLL.DTOs;
 using eCommerce.ProductService.BLL.Mappers;
+using eCommerce.ProductService.BLL.Services;
+using eCommerce.ProductService.BLL.ServicesInterfaces;
 using eCommerce.ProductService.BLL.Validators;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +16,7 @@ public static class ServiceCollectionExtension
         
         services.AddScoped<IValidator<AddProductRequest>, AddProductRequestValidator>();
         services.AddScoped<IValidator<UpdateProductRequest>, UpdateProductRequestValidator>();
+        services.AddScoped<IProductsService, ProductsService>();
         
         return services;
     }
