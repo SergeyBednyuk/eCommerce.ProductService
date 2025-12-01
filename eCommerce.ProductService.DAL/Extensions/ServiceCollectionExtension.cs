@@ -11,13 +11,15 @@ public static class ServiceCollectionExtension
 {
     public static IServiceCollection AddDataAccessLayer(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-        {
-            options.UseMySQL(configuration.GetConnectionString("DefaultConnection")!);
-        });
-        
+        var connectionStringTemplate = configuration.GetConnectionString("DefaultConnection")!;
+        var connectionString = connectionStringTemplate
+            .Replace("$MYSQL_HOST", Environment.GetEnvironmentVariable("MYSQL_HOST"))
+            .Replace("$MYSQL_PASSWORD", Environment.GetEnvironmentVariable("MYSQL_PASSWORD"));
+
+        services.AddDbContext<ApplicationDbContext>(options => { options.UseMySQL(connectionString); });
+
         services.AddScoped<IProductsRepository, ProductRepository>();
-        
+
         return services;
     }
 }

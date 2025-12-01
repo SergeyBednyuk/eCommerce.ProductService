@@ -6,6 +6,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eCommerce.ProductService.DA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eCommerce.ProductService.BLL", "eCommerce.ProductService.BLL\eCommerce.ProductService.BLL.csproj", "{CFC74939-3CBB-408D-8552-B06AA99E2BD4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{025E06FA-2598-4550-9361-E22760143F76}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+		init.sql = init.sql
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

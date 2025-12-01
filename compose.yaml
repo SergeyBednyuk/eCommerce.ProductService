@@ -1,0 +1,48 @@
+﻿version: '3.8'
+
+services:
+  # Database service
+  mysql-db:
+    image: mysql:latest
+    container_name: mysql-db-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "Legion13$%"
+    ports:
+      - "3306:3306"
+    volumes:
+      # Mount the init script from your project folder
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      # Persist data so you don't lose it when container stops
+      - mysql-data:/var/lib/mysql
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+  # Product API service
+  products-api:
+    image: siarheibiadniuk/e-commerce-products-api:v1.0
+    container_name: product-api-container
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - MYSQL_HOST=mysql-db
+      - MYSQL_PASSWORD=Legion13$%
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    
+networks:
+  ecommerce-network:
+    driver: bridge
+    
+volumes:
+  mysql-data:
