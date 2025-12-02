@@ -23,6 +23,27 @@ services:
       timeout: 5s
       retries: 5
       
+  postgres-db:
+    image: postgres:17
+    container_name: postgres-db-container
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "Legion13$%"
+      POSTGRES_DB: "eCommerce.Users"
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres-scripts/:/docker-entrypoint-initdb.d/
+      - postgres-db:/var/lib/postgresql/data
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
   # Product API service
   products-api:
     image: siarheibiadniuk/e-commerce-products-api:v1.0
@@ -39,6 +60,22 @@ services:
         condition: service_healthy
     networks:
       - ecommerce-network
+  
+  users-api:
+    image: siarheibiadniuk/e-commerce-users-api:v1.0
+    container_name: users-api-container
+    ports:
+      - "9090:9090"
+      - "9091:9091"
+    environment:
+      - POSTGRES_HOST=postgres-db
+      - POSTGRES_PASSWORD=Legion13$%
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
     
 networks:
   ecommerce-network:
@@ -46,3 +83,4 @@ networks:
     
 volumes:
   mysql-data:
+  postgres-db:

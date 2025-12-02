@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
 		init.sql = init.sql
+		postgres-scripts\01-postgres-init.sql = postgres-scripts\01-postgres-init.sql
+		postgres-scripts\02-postgres-init.sql = postgres-scripts\02-postgres-init.sql
 	EndProjectSection
 EndProject
 Global
