@@ -44,9 +44,9 @@ services:
       timeout: 5s
       retries: 5
   
-  # Product API service
+  # API service
   products-api:
-    image: siarheibiadniuk/e-commerce-products-api:v1.0
+    image: siarheibiadniuk/e-commerce-products-api:latest
     container_name: product-api-container
     ports:
       - "8080:8080"
@@ -62,14 +62,16 @@ services:
       - ecommerce-network
   
   users-api:
-    image: siarheibiadniuk/e-commerce-users-api:v1.0
+    image: siarheibiadniuk/e-commerce-users-api:latest
     container_name: users-api-container
     ports:
       - "9090:9090"
       - "9091:9091"
     environment:
+      - ASPNETCORE_URLS=http://+:9090
       - POSTGRES_HOST=postgres-db
       - POSTGRES_PASSWORD=Legion13$%
+      - POSTGRES_PORT=5432
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       postgres-db:
