@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using eCommerce.ProductService.API.APIEndpoints;
+using eCommerce.ProductService.API.Infrastructure;
 using eCommerce.ProductService.API.Middlewares;
 using eCommerce.ProductService.BLL.Extensions;
 using eCommerce.ProductService.DAL.Extensions;
@@ -35,10 +36,17 @@ public class Program
             });
         });
 
+        //New approach for Global exceptions handling
+        builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+        builder.Services.AddProblemDetails();
+
         var app = builder.Build();
 
-        app.UseGlobalExceptionHandlerMiddleware();
-
+        //Old approach for Global exceptions handling
+        // app.UseGlobalExceptionHandlerMiddleware();
+        //New approach for Global exceptions handling
+        app.UseExceptionHandler();
+        
         app.UseRouting();
         
         //CORS

@@ -1,10 +1,15 @@
-﻿namespace eCommerce.ProductService.API.Middlewares;
+﻿using System.Net;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
-public class GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<GlobalExceptionHandlerMiddleware> logger)
+namespace eCommerce.ProductService.API.Middlewares;
+
+public class GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<GlobalExceptionHandlerMiddleware> logger, IHostEnvironment env)
 {
     private readonly RequestDelegate _next = next;
     private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger = logger;
-
+    private readonly IHostEnvironment _env = env;
+    
     public async Task InvokeAsync(HttpContext context)
     {
         try
@@ -13,17 +18,21 @@ public class GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<Glob
         }
         catch (Exception ex)
         {
-            if (ex.InnerException is not null)
-            {
-                _logger.LogError($"{ex.InnerException.GetType().ToString()}: {ex.InnerException.Message}");
-            }
-            else
-            {
-                _logger.LogError($"{ex.GetType().ToString()}: {ex.Message}");
-            }
+            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
 
-            context.Response.StatusCode = 500;
-            await context.Response.WriteAsJsonAsync(new { Message = ex.Message, Type = ex.GetType().ToString() });
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+            var problem = new ProblemDetails
+            {
+                Status = context.Response.StatusCode,
+                Title = "An internal server error occured",
+                Detail = _env.IsDevelopment() ? ex.ToString() : "Please contact support"
+            };
+
+            var json = JsonSerializer.Serialize(problem);
+            await context.Response.WriteAsJsonAsync(json);
         }
     }
 }
