@@ -16,6 +16,8 @@ public static class ServiceCollectionExtension
         
         services.AddScoped<IValidator<AddProductRequest>, AddProductRequestValidator>();
         services.AddScoped<IValidator<UpdateProductRequest>, UpdateProductRequestValidator>();
+        services.AddScoped<IValidator<GetProductsByIdsRequest>, GetProductsByIdsRequestValidator>();
+        
         services.AddScoped<IProductsService, ProductsService>();
         
         return services;

@@ -12,7 +12,8 @@ public class ProductsService(
     IProductsRepository productsRepository,
     IMapper mapper,
     IValidator<AddProductRequest> addProductRequestValidator,
-    IValidator<UpdateProductRequest> updateProductRequestValidator) : IProductsService
+    IValidator<UpdateProductRequest> updateProductRequestValidator,
+    IValidator<GetProductsByIdsRequest> getProductsByIdsRequestValidator) : IProductsService
 {
     private readonly IProductsRepository _productsRepository = productsRepository;
     private readonly IMapper _mapper = mapper;
@@ -20,6 +21,9 @@ public class ProductsService(
     //Validators
     private readonly IValidator<AddProductRequest> _addProductRequestValidator = addProductRequestValidator;
     private readonly IValidator<UpdateProductRequest> _updateProductRequestValidator = updateProductRequestValidator;
+
+    private readonly IValidator<GetProductsByIdsRequest> _getProductsByIdsRequestValidator =
+        getProductsByIdsRequestValidator;
 
     public async Task<ProductResponse<IEnumerable<ProductDto>>> GetProductsAsync(int page = 1, int pageSize = 10)
     {
@@ -32,10 +36,26 @@ public class ProductsService(
     public async Task<ProductResponse<ProductDto>> GetProductAsync(Guid id)
     {
         var result = await _productsRepository.GetProductByConditionAsync(x => x.Id == id);
-        
+
         if (result is null) return ProductResponse<ProductDto>.Failure("Product not found");
-        
+
         return ProductResponse<ProductDto>.Success(_mapper.Map<ProductDto>(result));
+    }
+
+    public async Task<ProductResponse<IEnumerable<ProductDto>>> GetProductsByIdsAsync(
+        GetProductsByIdsRequest getProductsByIdsRequest)
+    {
+        var validationResult = await _getProductsByIdsRequestValidator.ValidateAsync(getProductsByIdsRequest);
+        if (!validationResult.IsValid)
+        {
+            return ProductResponse<IEnumerable<ProductDto>>.Failure("there are no ids in request",
+                validationResult.Errors.Select(x => x.ErrorMessage));
+        }
+
+        var result =
+            await _productsRepository.GetProductsByConditionAsync(x => getProductsByIdsRequest.Ids.Contains(x.Id));
+        var mapperResult = _mapper.Map<IEnumerable<ProductDto>>(result);
+        return ProductResponse<IEnumerable<ProductDto>>.Success(mapperResult);
     }
 
     public async Task<ProductResponse<IEnumerable<ProductDto>>> GetProductsByConditionAsync(ProductFilterDto filter)
@@ -106,7 +126,7 @@ public class ProductsService(
             (!filter.MaxPrice.HasValue || p.UnitPrice <= filter.MaxPrice) &&
             (!filter.MinQuantity.HasValue || p.QuantityInStock >= filter.MinQuantity) &&
             (!filter.MaxQuantity.HasValue || p.QuantityInStock <= filter.MaxQuantity);
-        
+
         return expression;
     }
 }

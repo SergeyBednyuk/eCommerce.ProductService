@@ -33,6 +33,13 @@ public static class ProductApiEndpoints
             return response.IsSuccess ? Results.Ok(response) : Results.NotFound(response);
         });
         
+        //Get /api/products/search/batch
+        group.MapPost("/search/batch", async (IProductsService productsService, [FromBody] GetProductsByIdsRequest ids) =>
+        {
+            var response = await productsService.GetProductsByIdsAsync(ids);
+            return response.IsSuccess ? Results.Ok(response) : Results.BadRequest(response);
+        });
+        
         //Get /api/products/search
         group.MapGet("/search", async (IProductsService productsService, [AsParameters] ProductFilterDto filter) =>
         {
