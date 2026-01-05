@@ -11,60 +11,68 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
-
-        builder.Services.AddBusinessLogic();
-        builder.Services.AddDataAccessLayer(builder.Configuration);
-
-        builder.Services.AddControllers();
-
-        builder.Services.ConfigureHttpJsonOptions(options =>
+        try
         {
-            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        });
+            var builder = WebApplication.CreateBuilder(args);
 
-        //Swagger
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+            builder.Services.AddBusinessLogic();
+            builder.Services.AddDataAccessLayer(builder.Configuration);
 
-        //CORS
-        builder.Services.AddCors(options =>
-        {
-            options.AddDefaultPolicy(builder =>
+            builder.Services.AddControllers();
+
+            builder.Services.ConfigureHttpJsonOptions(options =>
             {
-                builder.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
+                options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
-        });
 
-        //New approach for Global exceptions handling
-        builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-        builder.Services.AddProblemDetails();
+            //Swagger
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
-        var app = builder.Build();
+            //CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
+                });
+            });
 
-        //Old approach for Global exceptions handling
-        // app.UseGlobalExceptionHandlerMiddleware();
-        //New approach for Global exceptions handling
-        app.UseExceptionHandler();
-        
-        app.UseRouting();
-        
-        //CORS
-        app.UseCors();
-        
-        //Swagger
-        app.UseSwagger();
-        app.UseSwaggerUI();
+            //New approach for Global exceptions handling
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
 
-        //Auth
-        app.UseHttpsRedirection();
-        app.UseAuthentication();
-        app.UseAuthorization();
+            var app = builder.Build();
 
-        app.MapControllers();
+            //Old approach for Global exceptions handling
+            // app.UseGlobalExceptionHandlerMiddleware();
+            //New approach for Global exceptions handling
+            app.UseExceptionHandler();
 
-        app.MapProductApiEndpoints();
+            app.UseRouting();
 
-        app.Run();
+            //CORS
+            app.UseCors();
+
+            //Swagger
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            //Auth
+            app.UseHttpsRedirection();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.MapControllers();
+
+            app.MapProductApiEndpoints();
+
+            app.Run();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"CRITICAL STARTUP ERROR: {ex.Message}");
+            throw;
+        }
     }
 }
