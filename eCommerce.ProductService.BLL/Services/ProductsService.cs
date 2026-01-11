@@ -118,7 +118,8 @@ public class ProductsService(
             : ProductResponse<ProductDto>.Failure("Failed to delete product from database");
     }
 
-    public async Task<ProductResponse<ProductDto>> ReduceProductStockAsync(Guid id, ReduceStockRequest reduceStockRequest)
+    public async Task<ProductResponse<ProductDto>> UpdateProductStockAsync(Guid id,
+        ReduceStockRequest reduceStockRequest)
     {
         int maxRetries = 3;
 
@@ -129,10 +130,19 @@ public class ProductsService(
                 var result = await _productsRepository.GetProductForUpdateAsync(id);
 
                 if (result is null) return ProductResponse<ProductDto>.Failure("Product not found");
-                if (result.QuantityInStock < reduceStockRequest.Quantity)
-                    return ProductResponse<ProductDto>.Failure("Not enough product quantity in the stock");
 
-                result.QuantityInStock -= reduceStockRequest.Quantity;
+                if (reduceStockRequest.Reduce)
+                {
+                    if (result.QuantityInStock < reduceStockRequest.Quantity)
+                        return ProductResponse<ProductDto>.Failure("Not enough product quantity in the stock");
+
+                    result.QuantityInStock -= reduceStockRequest.Quantity;
+                }
+                else
+                {
+                    // Kinda rollback if something happened after reducing 
+                    result.QuantityInStock += reduceStockRequest.Quantity;
+                }
 
                 await _productsRepository.SaveProductsChangesAsync();
 

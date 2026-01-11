@@ -64,9 +64,9 @@ public static class ProductApiEndpoints
         });
         
         //Put /api/products/{id}/reduce-stock
-        group.MapPut("/{productId:guid}/reduce-stock", async (IProductsService productsService, Guid productId, [FromBody] ReduceStockRequest request) =>
+        group.MapPut("/{productId:guid}/update-stock", async (IProductsService productsService, Guid productId, [FromBody] ReduceStockRequest request) =>
         {
-            var response = await productsService.ReduceProductStockAsync(productId, request);
+            var response = await productsService.UpdateProductStockAsync(productId, request);
             return response.IsSuccess ? Results.Ok(response) : Results.BadRequest(response);
         });
         
