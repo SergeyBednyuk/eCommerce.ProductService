@@ -25,6 +25,12 @@ public interface IProductsRepository
     /// <returns>Product based on condition</returns>
     Task<Product?> GetProductByConditionAsync(Expression<Func<Product, bool>> conditionExpression);
     /// <summary>
+    /// Get product for update(without AsNoTracking) based on condition
+    /// </summary>
+    /// <param name="conditionExpression">filtering condition</param>
+    /// <returns>Product based on condition</returns>
+    Task<Product?> GetProductForUpdateAsync(Guid id);
+    /// <summary>
     /// Add new product
     /// </summary>
     /// <param name="product">Product that should be added</param>
@@ -42,4 +48,10 @@ public interface IProductsRepository
     /// <param name="productId">product id that should be deleted</param>
     /// <returns>true if deleting was successful or false if it was not</returns>
     Task<bool> DeleteProductAsync(Guid productId);
+
+    /// <summary>
+    /// To support of Unit of works for Products repo
+    /// </summary>
+    /// <returns></returns>
+    public Task SaveProductsChangesAsync();
 }

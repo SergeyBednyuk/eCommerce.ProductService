@@ -14,4 +14,5 @@ public interface IProductsService
     Task<ProductResponse<ProductDto>> AddProductAsync(AddProductRequest addProductRequest);
     Task<ProductResponse<ProductDto>> UpdateProductAsync(UpdateProductRequest updateProductRequest);
     Task<ProductResponse<ProductDto>> DeleteProductAsync(Guid id);
+    Task<ProductResponse<ProductDto>> ReduceProductStockAsync(Guid id, ReduceStockRequest reduceStockRequest);
 }

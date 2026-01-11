@@ -24,5 +24,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(p => p.UnitPrice)
             .HasPrecision(10, 2);
+
+        builder.Property(p => p.RowVersion).IsRowVersion();
     }
 }

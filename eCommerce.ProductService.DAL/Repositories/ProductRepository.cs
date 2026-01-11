@@ -33,6 +33,12 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductsReposi
         return result;
     }
 
+    public async Task<Product?> GetProductForUpdateAsync(Guid id)
+    {
+        var result = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
+        return result;
+    }
+
     public async Task<Product?> AddProductAsync(Product product)
     {
         _dbContext.Products.Add(product);
@@ -64,5 +70,9 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductsReposi
             .ExecuteDeleteAsync();
         return affectedRowsCount > 0;
     }
-    
+
+    public async Task SaveProductsChangesAsync()
+    {
+        await _dbContext.SaveChangesAsync();
+    }
 }

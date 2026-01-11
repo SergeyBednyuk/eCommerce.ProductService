@@ -63,6 +63,13 @@ public static class ProductApiEndpoints
                 : Results.BadRequest(response);
         });
         
+        //Put /api/products/{id}/reduce-stock
+        group.MapPut("/{productId:guid}/reduce-stock", async (IProductsService productsService, Guid productId, [FromBody] ReduceStockRequest request) =>
+        {
+            var response = await productsService.ReduceProductStockAsync(productId, request);
+            return response.IsSuccess ? Results.Ok(response) : Results.BadRequest(response);
+        });
+        
         //Put /api/products
         group.MapPut("/", async (IProductsService productsService, [FromBody] UpdateProductRequest updatedProduct) =>
         {

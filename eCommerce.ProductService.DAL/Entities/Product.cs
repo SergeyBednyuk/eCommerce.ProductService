@@ -1,4 +1,6 @@
-﻿namespace eCommerce.ProductService.DAL.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace eCommerce.ProductService.DAL.Entities;
 
 public class Product
 {
@@ -7,4 +9,7 @@ public class Product
     public string Category { get; set; } = "Other";
     public decimal UnitPrice { get; set; }
     public int QuantityInStock { get; set; }
+    
+    [Timestamp] 
+    public byte[] RowVersion { get; set; }
 }

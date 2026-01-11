@@ -5,6 +5,7 @@ using eCommerce.ProductService.BLL.ServicesInterfaces;
 using eCommerce.ProductService.DAL.Entities;
 using eCommerce.ProductService.DAL.RepositoryInterfaces;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 namespace eCommerce.ProductService.BLL.Services;
 
@@ -115,6 +116,40 @@ public class ProductsService(
         return isDeleted
             ? ProductResponse<ProductDto>.Success(_mapper.Map<ProductDto>(product), "Product deleted successfully")
             : ProductResponse<ProductDto>.Failure("Failed to delete product from database");
+    }
+
+    public async Task<ProductResponse<ProductDto>> ReduceProductStockAsync(Guid id, ReduceStockRequest reduceStockRequest)
+    {
+        int maxRetries = 3;
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                var result = await _productsRepository.GetProductForUpdateAsync(id);
+
+                if (result is null) return ProductResponse<ProductDto>.Failure("Product not found");
+                if (result.QuantityInStock < reduceStockRequest.Quantity)
+                    return ProductResponse<ProductDto>.Failure("Not enough product quantity in the stock");
+
+                result.QuantityInStock -= reduceStockRequest.Quantity;
+
+                await _productsRepository.SaveProductsChangesAsync();
+
+                return ProductResponse<ProductDto>.Success(_mapper.Map<ProductDto>(result));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (i == maxRetries - 1)
+                    return ProductResponse<ProductDto>.Failure(
+                        "Failed to reduce stock due to high traffic. Please try again.");
+
+                int delay = Random.Shared.Next(10, 30) + (10 * i);
+                await Task.Delay(delay);
+            }
+        }
+
+        return ProductResponse<ProductDto>.Failure("Can't reduce the product stock");
     }
 
     private Expression<Func<Product, bool>> CreateExpression(ProductFilterDto filter)
