@@ -27,9 +27,16 @@ public interface IProductsRepository
     /// <summary>
     /// Get product for update(without AsNoTracking) based on condition
     /// </summary>
-    /// <param name="conditionExpression">filtering condition</param>
+    /// <param name="id">product id</param>
     /// <returns>Product based on condition</returns>
     Task<Product?> GetProductForUpdateAsync(Guid id);
+
+    /// <summary>
+    /// Get products for update(without AsNoTracking) based on condition
+    /// </summary>
+    /// <param name="ids">Products ids</param>
+    /// <returns>Product based on condition</returns>
+    Task<IEnumerable<Product>> GetProductsForUpdateAsync(IEnumerable<Guid> ids);
     /// <summary>
     /// Add new product
     /// </summary>
@@ -48,7 +55,6 @@ public interface IProductsRepository
     /// <param name="productId">product id that should be deleted</param>
     /// <returns>true if deleting was successful or false if it was not</returns>
     Task<bool> DeleteProductAsync(Guid productId);
-
     /// <summary>
     /// To support of Unit of works for Products repo
     /// </summary>

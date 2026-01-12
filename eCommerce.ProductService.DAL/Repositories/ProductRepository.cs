@@ -39,6 +39,12 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductsReposi
         return result;
     }
 
+    public async Task<IEnumerable<Product>> GetProductsForUpdateAsync(IEnumerable<Guid> ids)
+    {
+        var result = await _dbContext.Products.Where(x => ids.Contains(x.Id)).ToListAsync();
+        return result;
+    }
+
     public async Task<Product?> AddProductAsync(Product product)
     {
         _dbContext.Products.Add(product);

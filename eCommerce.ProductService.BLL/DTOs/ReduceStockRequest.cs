@@ -1,3 +1,3 @@
 ﻿namespace eCommerce.ProductService.BLL.DTOs;
 
-public record ReduceStockRequest(int Quantity, bool Reduce = true);
+public record ReduceStockRequest(IEnumerable<ReduceStockDto> ReduceStockItems, bool Reduce = true);

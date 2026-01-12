@@ -118,7 +118,7 @@ public class ProductsService(
             : ProductResponse<ProductDto>.Failure("Failed to delete product from database");
     }
 
-    public async Task<ProductResponse<ProductDto>> UpdateProductStockAsync(Guid id,
+    public async Task<ProductResponse<IEnumerable<ProductDto>>> UpdateProductStockAsync(
         ReduceStockRequest reduceStockRequest)
     {
         int maxRetries = 3;
@@ -127,16 +127,21 @@ public class ProductsService(
         {
             try
             {
-                var result = await _productsRepository.GetProductForUpdateAsync(id);
+                var result = await _productsRepository.GetProductsForUpdateAsync(reduceStockRequest.ReduceStockItems.Select(x => x.Id));
 
-                if (result is null) return ProductResponse<ProductDto>.Failure("Product not found");
+                if (reduceStockRequest.ReduceStockItems.Count() != result.Count()) return ProductResponse<IEnumerable<ProductDto>>.Failure("Some Products not found");
 
                 if (reduceStockRequest.Reduce)
                 {
-                    if (result.QuantityInStock < reduceStockRequest.Quantity)
-                        return ProductResponse<ProductDto>.Failure("Not enough product quantity in the stock");
+                    foreach (var product in reduceStockRequest.ReduceStockItems)
+                    {
+                        var productToUpdate = result.First(x => x.Id == product.Id);
+                        if (productToUpdate.QuantityInStock < product.Quantity)
+                            return ProductResponse<IEnumerable<ProductDto>>.Failure($"Not enough product quantity in the stock for {product.Id}");   
+                        
+                        productToUpdate.QuantityInStock -= product.Quantity;
+                    }
 
-                    result.QuantityInStock -= reduceStockRequest.Quantity;
                 }
                 else
                 {
@@ -146,12 +151,12 @@ public class ProductsService(
 
                 await _productsRepository.SaveProductsChangesAsync();
 
-                return ProductResponse<ProductDto>.Success(_mapper.Map<ProductDto>(result));
+                return ProductResponse<IEnumerable<ProductDto>>.Success(_mapper.Map<IEnumerable<ProductDto>>(result));
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (i == maxRetries - 1)
-                    return ProductResponse<ProductDto>.Failure(
+                    return ProductResponse<IEnumerable<ProductDto>>.Failure(
                         "Failed to reduce stock due to high traffic. Please try again.");
 
                 int delay = Random.Shared.Next(10, 30) + (10 * i);
@@ -159,7 +164,7 @@ public class ProductsService(
             }
         }
 
-        return ProductResponse<ProductDto>.Failure("Can't reduce the product stock");
+        return ProductResponse<IEnumerable<ProductDto>>.Failure("Can't reduce the products stock");
     }
 
     private Expression<Func<Product, bool>> CreateExpression(ProductFilterDto filter)
