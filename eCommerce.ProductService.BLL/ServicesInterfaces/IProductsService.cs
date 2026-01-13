@@ -14,5 +14,5 @@ public interface IProductsService
     Task<ProductResponse<ProductDto>> AddProductAsync(AddProductRequest addProductRequest);
     Task<ProductResponse<ProductDto>> UpdateProductAsync(UpdateProductRequest updateProductRequest);
     Task<ProductResponse<ProductDto>> DeleteProductAsync(Guid id);
-    Task<ProductResponse<IEnumerable<ProductDto>>> UpdateProductsStockAsync(ReduceStockRequest reduceStockRequest);
+    Task<ProductResponse<IEnumerable<ProductDto>>> UpdateProductsStockAsync(UpdateStockRequest updateStockRequest);
 }

@@ -9,15 +9,15 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
     public void Configure(EntityTypeBuilder<Product> builder)
     {
         builder.ToTable("products");
-        
+
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id)
             .HasColumnType("char(36)");
-        
+
         builder.Property(p => p.Name)
             .HasMaxLength(50)
             .IsRequired();
-        
+
         builder.Property(p => p.Category)
             .HasMaxLength(50)
             .IsRequired();
@@ -25,6 +25,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.UnitPrice)
             .HasPrecision(10, 2);
 
-        builder.Property(p => p.RowVersion).IsRowVersion();
+        builder.Property(p => p.RowVersion)
+            .IsConcurrencyToken()
+            .ValueGeneratedOnAddOrUpdate();
     }
 }

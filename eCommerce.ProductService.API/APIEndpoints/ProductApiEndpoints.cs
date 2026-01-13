@@ -63,10 +63,10 @@ public static class ProductApiEndpoints
                 : Results.BadRequest(response);
         });
         
-        //Put /api/products/{id}/reduce-stock
-        group.MapPut("/{productId:guid}/update-stock", async (IProductsService productsService, Guid productId, [FromBody] ReduceStockRequest request) =>
+        //Post /api/products/update-stock
+        group.MapPost("/stock/batch-update", async (IProductsService productsService, [FromBody] UpdateStockRequest request) =>
         {
-            var response = await productsService.UpdateProductStockAsync(productId, request);
+            var response = await productsService.UpdateProductsStockAsync(request);
             return response.IsSuccess ? Results.Ok(response) : Results.BadRequest(response);
         });
         
