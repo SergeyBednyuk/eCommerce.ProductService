@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using eCommerce.ProductService.BLL.DTOs;
+using eCommerce.ProductService.BLL.RabbitMQ;
 using eCommerce.ProductService.BLL.ServicesInterfaces;
 using eCommerce.ProductService.DAL.Entities;
 using eCommerce.ProductService.DAL.RepositoryInterfaces;
@@ -14,10 +15,12 @@ public class ProductsService(
     IMapper mapper,
     IValidator<AddProductRequest> addProductRequestValidator,
     IValidator<UpdateProductRequest> updateProductRequestValidator,
-    IValidator<GetProductsByIdsRequest> getProductsByIdsRequestValidator) : IProductsService
+    IValidator<GetProductsByIdsRequest> getProductsByIdsRequestValidator,
+    IMessagePublisher messagePublisher) : IProductsService
 {
     private readonly IProductsRepository _productsRepository = productsRepository;
     private readonly IMapper _mapper = mapper;
+    private readonly IMessagePublisher _messagePublisher = messagePublisher;
 
     //Validators
     private readonly IValidator<AddProductRequest> _addProductRequestValidator = addProductRequestValidator;
@@ -88,7 +91,11 @@ public class ProductsService(
 
         if (result is null) return ProductResponse<ProductDto>.Failure("Can't create new product");
 
-        return ProductResponse<ProductDto>.Success(_mapper.Map<ProductDto>(result));
+        var productDto = _mapper.Map<ProductDto>(result);
+
+        await _messagePublisher.PublishMessageAsync(productDto, RabbitMqConstants.RoutingKeys.ProductCreated);
+
+        return ProductResponse<ProductDto>.Success(productDto);
     }
 
     public async Task<ProductResponse<ProductDto>> UpdateProductAsync(UpdateProductRequest updateProductRequest)
@@ -101,9 +108,13 @@ public class ProductsService(
         var product = _mapper.Map<Product>(updateProductRequest);
         var result = await _productsRepository.UpdateProductAsync(product);
 
-        return result is null
-            ? ProductResponse<ProductDto>.Failure("Can't update product")
-            : ProductResponse<ProductDto>.Success(_mapper.Map<ProductDto>(result));
+        if (result is null) return ProductResponse<ProductDto>.Failure("Can't update product");
+
+        var productDto = _mapper.Map<ProductDto>(result);
+
+        await _messagePublisher.PublishMessageAsync(productDto, RabbitMqConstants.RoutingKeys.ProductUpdated);
+
+        return ProductResponse<ProductDto>.Success(productDto);
     }
 
     public async Task<ProductResponse<ProductDto>> DeleteProductAsync(Guid id)
@@ -113,9 +124,17 @@ public class ProductsService(
 
         var isDeleted = await _productsRepository.DeleteProductAsync(product.Id);
 
-        return isDeleted
-            ? ProductResponse<ProductDto>.Success(_mapper.Map<ProductDto>(product), "Product deleted successfully")
-            : ProductResponse<ProductDto>.Failure("Failed to delete product from database");
+        if (isDeleted)
+        {
+            var productDto = _mapper.Map<ProductDto>(product);
+
+            await _messagePublisher.PublishMessageAsync(productDto, RabbitMqConstants.RoutingKeys.ProductDeleted);
+
+            return ProductResponse<ProductDto>.Success(productDto,
+                "Product deleted successfully");
+        }
+
+        return ProductResponse<ProductDto>.Failure("Failed to delete product from database");
     }
 
     public async Task<ProductResponse<IEnumerable<ProductDto>>> UpdateProductsStockAsync(
@@ -166,8 +185,15 @@ public class ProductsService(
 
                 await _productsRepository.SaveProductsChangesAsync();
 
-                return ProductResponse<IEnumerable<ProductDto>>.Success(
-                    _mapper.Map<IEnumerable<ProductDto>>(dbProductsList));
+                var productsDtos = _mapper.Map<List<ProductDto>>(dbProductsList);
+
+                var publishTasks =
+                    productsDtos.Select(productDto =>
+                        _messagePublisher.PublishMessageAsync<ProductDto>(productDto, RabbitMqConstants.RoutingKeys.ProductStockUpdated));
+
+                await Task.WhenAll(publishTasks);
+
+                return ProductResponse<IEnumerable<ProductDto>>.Success(productsDtos);
             }
             catch (DbUpdateConcurrencyException)
             {

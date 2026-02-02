@@ -15,7 +15,7 @@ public class Program
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddBusinessLogic();
+            builder.Services.AddBusinessLogic(builder.Configuration);
             builder.Services.AddDataAccessLayer(builder.Configuration);
 
             builder.Services.AddControllers();
